@@ -1,0 +1,69 @@
+<html>
+<head>
+    <script src='https://cdn.rawgit.com/naptha/tesseract.js/1.0.10/dist/tesseract.js'></script>
+    <title>Tesseract Test</title>
+</head>
+
+<body>
+    <label for="fileInput">Choose File to upload:</label>
+    <input type="file" id="fileInput" name="fileInput" />
+    <br />
+    <br />
+    <div id="document-content">
+    </div>
+</body>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var fileInput = document.getElementById('fileInput');
+        fileInput.addEventListener('change', handleInputChange);
+    });
+
+    function handleInputChange(event) {
+        var input = event.target;
+        var file = input.files[0];
+        console.log(file);
+
+        alert("Processing started please wait for the confirmation.");
+
+        var img = document.getElementById('imgId');
+        img.src = "images/"+file.name;
+
+        Tesseract.recognize(file)
+            .progress(function (message) {
+                console.log(message);
+            })
+            .then(function (result) {
+                var contentArea = document.getElementById('document-content');
+                generateElemenet(result);
+                //alert(result.text);
+                alert("Image processing completed, Please click on image text now!")
+            })
+            .catch(function (err) {
+                console.error(err);
+            });
+    }
+
+    function generateElemenet(result) {        
+        var map = document.getElementById('Map');
+        for (let i = 0; i < result.words.length; i++) {
+            var area = document.createElement('area');
+            area.id = area+i;
+            area.share = "rect";
+            area.coords = ""+result.words[i].bbox.x0+","+result.words[i].bbox.y0+","+result.words[i].bbox.x1+","+result.words[i].bbox.y1+"";
+            area.onclick = function () { alert(result.words[i].text) };
+            area.setAttribute("style", "cursor: pointer");
+            map.appendChild(area);
+        }
+    }
+
+
+</script>
+
+<div>
+    <div>
+        <img id="imgId" usemap="#Map" />
+        <map name="Map" id="Map">
+        </map>
+    </div>
+</div>
+</html>
